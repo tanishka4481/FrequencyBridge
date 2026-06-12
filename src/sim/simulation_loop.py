@@ -7,7 +7,9 @@ HVDC Converter, and the Double Auction Engine into a unified temporal loop.
 
 from typing import List, Dict, Any
 from dataclasses import dataclass
+import os
 import numpy as np
+import pandas as pd
 
 from src.physics.frequency_model import FrequencyModel, TwoAreaParams
 from src.physics.weather import WeatherGenerator, WeatherParams
@@ -64,6 +66,13 @@ class FreqBridgeSimulation:
         # 5. Initialize Agents
         self.agents: List[MicroGridAgent] = []
         self._setup_default_agents()
+        
+        # 6. Load JEPX Spot Prices
+        jepx_path = os.path.join(os.path.dirname(__file__), "..", "..", "data", "jepx_prices_sample.csv")
+        if os.path.exists(jepx_path):
+            self.jepx_data = pd.read_csv(jepx_path)["price_usd_mwh"].tolist()
+        else:
+            self.jepx_data = [30.0] * 48
 
     def _setup_default_agents(self):
         """Setup a baseline mix of East and West microgrids."""
@@ -108,8 +117,15 @@ class FreqBridgeSimulation:
             agent_cf = cf_east if agent.params.region == "east" else cf_west
             agent.update_state(agent_cf, dt_mins / 60.0)
             
-            # Estimate current price (we'll just use a trailing average or default for now)
-            estimated_price = 30.0 
+            # Feed a pseudo-forecast (e.g. constant current CF) so the blackout predictor can work
+            forecast_length = 12
+            forecast = [agent_cf] * forecast_length
+            agent.evaluate_risk(forecast)
+            
+            # Estimate current price based on the JEPX data
+            # 1 tick = 5 mins. JEPX data has 48 periods (30 mins each)
+            jepx_idx = (self.current_tick // 6) % 48
+            estimated_price = self.jepx_data[jepx_idx]
             
             bid = agent.generate_bid(estimated_price, self.config.price_ceiling)
             if bid:
