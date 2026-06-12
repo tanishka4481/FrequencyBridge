@@ -1,0 +1,47 @@
+# --- Environments & secrets ---
+.env
+.env.*
+*.pem
+*.key
+secrets.json
+config/local_settings.py
+config/settings.toml
+**/credentials/
+
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# --- Data / large or generated files ---
+*.log
+*.sqlite3
+data/raw/
+data/scratch/
+
+# --- Editor / OS cruft ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Chat exports, scratch notes, AI session artifacts ---
+chat_exports/
+*_chatlog*.md
+*_scratch*.md
+ai_notes/
+*.session.json
+notebooks/scratch_*.ipynb
+# --- Demo videos (too large for git) ---
+*.mp4
+*.mov
+*.avi
+*.mkv
+
+checkpoints/
+implementation_plan.md
+task.md
