@@ -42,6 +42,4 @@ notebooks/scratch_*.ipynb
 *.avi
 *.mkv
 
-checkpoints/
-implementation_plan.md
-task.md
+

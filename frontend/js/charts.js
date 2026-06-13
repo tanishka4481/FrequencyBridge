@@ -26,7 +26,7 @@ const weatherChart = new Chart(ctxWeather, {
             { label: 'Wind CF', borderColor: '#38BDF8', data: [] }
         ]
     },
-    options: { ...commonOptions, plugins: { legend: { position: 'bottom' } }, scales: { y: { min: 0, max: 1, ...commonOptions.scales.y } } }
+    options: { ...commonOptions, plugins: { legend: { position: 'bottom' } }, scales: { y: { min: 0, max: 1, ...commonOptions.scales.y, ticks: { callback: function(val) { return (val * 100).toFixed(0) + '%'; } } } } }
 });
 
 // 2. Frequency Chart
@@ -39,7 +39,7 @@ const freqChart = new Chart(ctxFreq, {
             { label: 'West (60Hz)', borderColor: '#22C55E', data: [] }
         ]
     },
-    options: commonOptions
+    options: { ...commonOptions, scales: { x: commonOptions.scales.x, y: { ...commonOptions.scales.y, ticks: { callback: function(val) { return val.toFixed(3) + ' Hz'; } } } } }
 });
 
 // 3. Converter Flow
@@ -51,7 +51,7 @@ const converterChart = new Chart(ctxConverter, {
             { label: 'Flow MW (Pos=E->W, Neg=W->E)', backgroundColor: '#38BDF8', data: [] }
         ]
     },
-    options: commonOptions
+    options: { ...commonOptions, scales: { x: commonOptions.scales.x, y: { ...commonOptions.scales.y, ticks: { callback: function(val) { return val.toFixed(1) + ' MW'; } } } } }
 });
 
 // 4. Market Pricing
@@ -64,7 +64,7 @@ const marketChart = new Chart(ctxMarket, {
             { label: 'Price West ($)', borderColor: '#22C55E', data: [], type: 'line' }
         ]
     },
-    options: commonOptions
+    options: { ...commonOptions, scales: { x: commonOptions.scales.x, y: { ...commonOptions.scales.y, ticks: { callback: function(val) { return '$' + val.toFixed(2); } } } } }
 });
 
 // UPDATE LOGIC

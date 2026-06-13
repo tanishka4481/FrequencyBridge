@@ -27,6 +27,27 @@ function fmtNum(val, decimals = 2) {
 let previousLogLen = 0;
 
 simStream.subscribe((state) => {
+    // 0. Status Indicator & Mode Button
+    const statusInd = document.getElementById('status-indicator');
+    if (state.running) {
+        statusInd.textContent = '● LIVE';
+        statusInd.style.color = 'var(--color-success)';
+    } else {
+        statusInd.textContent = '● PAUSED';
+        statusInd.style.color = 'var(--color-warning)';
+    }
+
+    const pidBtn = document.getElementById('btn-pid-mode');
+    if (state.mode === 'pid') {
+        pidBtn.textContent = 'Switch Market';
+        pidBtn.style.borderColor = 'var(--color-warning)';
+        pidBtn.style.color = 'var(--color-warning)';
+    } else {
+        pidBtn.textContent = 'Switch PID';
+        pidBtn.style.borderColor = '';
+        pidBtn.style.color = '';
+    }
+
     // 1. KPI Strip
     const eastFreq = document.getElementById('kpi-east-freq');
     const westFreq = document.getElementById('kpi-west-freq');
@@ -81,5 +102,30 @@ simStream.subscribe((state) => {
         // Must have reset
         logsContainer.innerHTML = '';
         previousLogLen = 0;
+    }
+
+    // 3. Agent Telemetry Table
+    const telemetryBody = document.getElementById('telemetry-body');
+    if (state.topology && state.topology.nodes) {
+        telemetryBody.innerHTML = ''; // clear current
+        state.topology.nodes.forEach(agent => {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+            
+            // Mode highlighting
+            let modeStr = agent.mode.toUpperCase();
+            let modeColor = agent.mode === 'survival' ? 'var(--color-warning)' : 'var(--color-success)';
+
+            tr.innerHTML = `
+                <td style="padding: 0.5rem; font-weight: bold; color: #E5E7EB;">${agent.id}</td>
+                <td style="padding: 0.5rem; color: #9CA3AF;">${agent.region.toUpperCase()}</td>
+                <td style="padding: 0.5rem; color: #38BDF8;">${fmtNum(agent.generation_mw)}</td>
+                <td style="padding: 0.5rem; color: #F87171;">${fmtNum(agent.demand_mw)}</td>
+                <td style="padding: 0.5rem; color: #8B5CF6; font-weight: bold;">${fmtNum(agent.battery_mwh)}</td>
+                <td style="padding: 0.5rem; font-weight: bold; color: ${modeColor};">${modeStr}</td>
+                <td style="padding: 0.5rem; color: #A78BFA;">${fmtNum(agent.forecast_cf * 100, 1)}%</td>
+            `;
+            telemetryBody.appendChild(tr);
+        });
     }
 });

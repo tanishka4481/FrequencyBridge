@@ -13,7 +13,7 @@
         <header class="kpi-strip">
             <div class="brand">
                 <h1>FreqBridge</h1>
-                <span class="status-indicator">● LIVE</span>
+                <span class="status-indicator" id="status-indicator">● LIVE</span>
             </div>
             <div class="kpi-container">
                 <div class="kpi-box">
@@ -79,6 +79,29 @@
                     <!-- Logs go here -->
                 </div>
             </aside>
+
+            <!-- AGENT TELEMETRY SECTION -->
+            <section class="panel telemetry-panel" style="grid-column: 1 / -1;">
+                <h2>MicroGrid Agent Telemetry</h2>
+                <div class="table-container" style="overflow-x: auto;">
+                    <table class="telemetry-table" style="width: 100%; text-align: left; border-collapse: collapse; margin-top: 1rem;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <th style="padding: 0.5rem;">Agent ID</th>
+                                <th style="padding: 0.5rem;">Region</th>
+                                <th style="padding: 0.5rem;">Gen (MW)</th>
+                                <th style="padding: 0.5rem;">Demand (MW)</th>
+                                <th style="padding: 0.5rem;">Battery Buffer (MWh)</th>
+                                <th style="padding: 0.5rem;">Operating Mode</th>
+                                <th style="padding: 0.5rem;">90m Forecast (CF)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="telemetry-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
 
             <!-- BOTTOM SECTION: Charts -->
             <section class="panel bottom-panel">

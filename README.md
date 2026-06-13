@@ -31,9 +31,6 @@ source .venv/bin/activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Copy config template
-cp config/settings.example.toml config/settings.toml
-```
 
 ### Run
 
@@ -47,8 +44,12 @@ python scripts/run_auction_scenarios.py
 # Run full 24h simulation (Phase 5)
 python scripts/run_full_sim.py
 
-# Launch dashboard (Phase 6)
-streamlit run src/dashboard/app.py
+# Launch API Backend
+python -m uvicorn src.backend.api:app --host 0.0.0.0 --port 8000
+
+# Launch Frontend UI (in a new terminal)
+cd frontend
+python -m http.server 3000
 ```
 
 ### Tests
@@ -68,7 +69,8 @@ src/
 ├── agents/           # Microgrid agents, hedging logic
 ├── market/           # Double auction engine, PID baseline
 ├── sim/              # Unified simulation loop
-└── dashboard/        # Streamlit visualization
+├── backend/          # FastAPI backend server
+└── frontend/         # Vanilla HTML/CSS/JS dashboard
 ```
 
 See [docs/architecture.md](docs/architecture.md) for detailed system design.
@@ -88,11 +90,10 @@ See [docs/architecture.md](docs/architecture.md) for detailed system design.
 
 | Parameter | Value | Note |
 |-----------|-------|------|
-| Converter capacity | 300 MW | Fixed physical constraint |
+| Converter capacity | 1200 MW | Fixed physical constraint (1.2GW) |
 | Transmission loss | 2% | Applied to cross-region trades |
-| Hedge trigger | 65% P(blackout) | Demo-tuned, not LOLE-derived |
-| Emergency threshold | 73% P(blackout) | Demo-tuned |
-| Tick duration | 30s grid time | Configurable in settings.toml |
+| Hedge trigger | 70% P(blackout) | Demo-tuned threshold for SURVIVAL mode |
+| Tick duration | 5m grid time | Configurable in settings.toml |
 
 ---
 

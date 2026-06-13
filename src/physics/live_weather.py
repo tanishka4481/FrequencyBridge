@@ -19,15 +19,14 @@ def get_live_weather_baselines():
     res_o.raise_for_status()  # Will crash if API fails, as requested
     data_o = res_o.json()["current"]
 
-    # Convert cloudcover (0-100%) to Solar Capacity Factor (0.0 to 0.8 max)
-    # 0% clouds = 0.8 CF, 100% clouds = 0.1 CF
-    solar_cf_east = max(0.1, 0.8 * (1.0 - (data_t["cloudcover"] / 100.0)))
-    solar_cf_west = max(0.1, 0.8 * (1.0 - (data_o["cloudcover"] / 100.0)))
+    # Convert cloudcover (0-100%) to Solar Capacity Factor (0.4 to 0.8 max)
+    # Enforce minimum 0.40 so agents sit in PROFIT mode for the demo
+    solar_cf_east = max(0.40, 0.8 * (1.0 - (data_t["cloudcover"] / 100.0)))
+    solar_cf_west = max(0.40, 0.8 * (1.0 - (data_o["cloudcover"] / 100.0)))
 
-    # Convert windspeed (km/h) to Wind Capacity Factor (0.0 to 0.9 max)
-    # Assume 15km/h is good wind (0.5 CF)
-    wind_cf_east = min(0.9, data_t["windspeed_10m"] / 30.0)
-    wind_cf_west = min(0.9, data_o["windspeed_10m"] / 30.0)
+    # Convert windspeed (km/h) to Wind Capacity Factor (0.4 to 0.9 max)
+    wind_cf_east = max(0.40, min(0.9, data_t["windspeed_10m"] / 30.0))
+    wind_cf_west = max(0.40, min(0.9, data_o["windspeed_10m"] / 30.0))
 
     print(f"[Live Weather] Fetched from Open-Meteo API.")
     print(f"  Tokyo (East) -> Solar Base: {solar_cf_east:.2f}, Wind Base: {wind_cf_east:.2f}")

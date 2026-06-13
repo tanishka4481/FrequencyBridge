@@ -43,18 +43,40 @@ class SimulationRunner:
         self.add_log("[System] Simulation reset.")
 
     def inject_cloud_shock(self):
-        self.sim.weather_gen_east.inject_shock(solar_shock=-0.8)
-        self.sim.weather_gen_west.inject_shock(solar_shock=-0.8)
-        self.add_log("[Weather] Cloud shock injected! Solar CF dropping.")
+        self.sim.weather_gen_east.solar_params.long_term_mean = 0.0
+        self.sim.weather_gen_east.wind_params.long_term_mean = 0.0
+        self.sim.weather_gen_east.solar_params.volatility = 0.0
+        self.sim.weather_gen_east.wind_params.volatility = 0.0
+        self.sim.weather_gen_east.inject_shock(solar_shock=-1.0, wind_shock=-1.0)
+        
+        self.sim.weather_gen_west.solar_params.long_term_mean = 0.0
+        self.sim.weather_gen_west.wind_params.long_term_mean = 0.0
+        self.sim.weather_gen_west.solar_params.volatility = 0.0
+        self.sim.weather_gen_west.wind_params.volatility = 0.0
+        self.sim.weather_gen_west.inject_shock(solar_shock=-1.0, wind_shock=-1.0)
+        self.add_log("[Weather] Massive Cloud Shock injected! CF dropping.")
 
     def inject_wind_collapse(self):
-        self.sim.weather_gen_east.inject_shock(wind_shock=-0.8)
-        self.sim.weather_gen_west.inject_shock(wind_shock=-0.8)
-        self.add_log("[Weather] Wind collapse injected! Wind CF dropping.")
+        self.sim.weather_gen_east.solar_params.long_term_mean = 0.0
+        self.sim.weather_gen_east.wind_params.long_term_mean = 0.0
+        self.sim.weather_gen_east.solar_params.volatility = 0.0
+        self.sim.weather_gen_east.wind_params.volatility = 0.0
+        self.sim.weather_gen_east.inject_shock(solar_shock=-1.0, wind_shock=-1.0)
+        
+        self.sim.weather_gen_west.solar_params.long_term_mean = 0.0
+        self.sim.weather_gen_west.wind_params.long_term_mean = 0.0
+        self.sim.weather_gen_west.solar_params.volatility = 0.0
+        self.sim.weather_gen_west.wind_params.volatility = 0.0
+        self.sim.weather_gen_west.inject_shock(solar_shock=-1.0, wind_shock=-1.0)
+        self.add_log("[Weather] Massive Wind Collapse injected! CF dropping.")
 
     def switch_pid(self):
-        self.sim.config.controller_type = "pid"
-        self.add_log("[System] Switched to PID Baseline control mode.")
+        if self.sim.config.controller_type == "market":
+            self.sim.config.controller_type = "pid"
+            self.add_log("[System] Switched to PID Baseline control mode.")
+        else:
+            self.sim.config.controller_type = "market"
+            self.add_log("[System] Switched to Market control mode.")
 
     def add_log(self, msg: str):
         self.logs.append(msg)
@@ -130,13 +152,23 @@ class SimulationRunner:
             if hasattr(a, 'risk_state') and getattr(a.risk_state, 'blackout_probability', 0) > 0.3:
                 status = "Purple"
 
+            # Get Operating Mode
+            mode = getattr(a, 'mode', 'profit')
+
+            # Get 90-min forecast
+            w_gen = self.sim.weather_gen_east if a.params.region == "east" else self.sim.weather_gen_west
+            forecast = w_gen.generate_forecast(90, self.sim.config.tick_length_minutes)
+            avg_forecast_cf = sum((f.solar_cf + f.wind_cf) / 2.0 for f in forecast) / len(forecast) if forecast else 0.0
+
             agents_data.append({
                 "id": a.params.id,
                 "region": a.params.region,
                 "generation_mw": gen,
                 "demand_mw": dem,
                 "status": status,
-                "battery_mwh": a.state.battery_stored_mwh if hasattr(a, 'state') and hasattr(a.state, 'battery_stored_mwh') else 0.0,
+                "battery_mwh": a.battery_energy_mwh if hasattr(a, 'battery_energy_mwh') else 0.0,
+                "mode": mode,
+                "forecast_cf": avg_forecast_cf
             })
 
         # Calculate metrics over history
