@@ -15,10 +15,10 @@ from typing import List
 class HedgingConstants:
     """Centralized constants for hedging thresholds."""
     # Probability threshold to enter hedge mode (stop aggressive selling, hold base buffer)
-    HEDGE_THRESHOLD_PROB: float = 0.65
+    HEDGE_THRESHOLD_PROB: float = 0.70
     
     # Probability threshold to enter emergency reserve (start aggressive buying, max buffer)
-    EMERGENCY_THRESHOLD_PROB: float = 0.73
+    EMERGENCY_THRESHOLD_PROB: float = 0.75
     
     # Standard buffer required when in standard hedge mode (MWh)
     BASE_BUFFER_MWH: float = 15.0
@@ -58,16 +58,17 @@ class BlackoutPredictor:
             
         deficit_steps = 0
         cumulative_deficit = 0.0
+        cumulative_demand = 0.0
         
         for i in range(steps):
             net = expected_generation_mw[i] - expected_demand_mw[i]
+            cumulative_demand += expected_demand_mw[i]
             if net < 0:
                 deficit_steps += 1
                 cumulative_deficit += abs(net)
                 
-        # A simple heuristic: if more than 30% of upcoming steps are in deficit,
-        # and battery SOC is low, the probability of blackout is high.
-        base_prob = deficit_steps / steps
+        # Calculate base risk based on severity of deficit relative to total demand
+        base_prob = cumulative_deficit / cumulative_demand if cumulative_demand > 0 else 0.0
         
         # SOC acts as a mitigant. If SOC is 1.0, prob drops. If SOC is 0.0, prob rises.
         soc_factor = 1.0 - current_battery_soc

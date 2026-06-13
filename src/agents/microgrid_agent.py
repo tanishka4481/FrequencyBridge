@@ -47,6 +47,8 @@ class MicroGridAgent:
         # Operating Mode
         self.mode = "profit"       # "profit" or "survival"
         self.hedge_buffer_mwh = 0.0 # Energy reserved when in survival mode
+        self.ticks_since_mode_switch = 0
+        self.mode_cooldown_ticks = 3 # Lock mode for at least 3 ticks (15 mins) to prevent hardware chatter
 
     @property
     def battery_soc(self) -> float:
@@ -82,7 +84,14 @@ class MicroGridAgent:
         prob = self.predictor.calculate_probability(expected_gen, expected_dem, self.battery_soc)
         
         new_mode, required_buffer = self.predictor.determine_mode(prob)
-        self.set_survival_mode(new_mode == "survival", required_buffer)
+        
+        self.ticks_since_mode_switch += 1
+        current_mode_str = "survival" if self.mode == "survival" else "profit"
+        
+        if new_mode != current_mode_str:
+            if self.ticks_since_mode_switch >= self.mode_cooldown_ticks:
+                self.set_survival_mode(new_mode == "survival", required_buffer)
+                self.ticks_since_mode_switch = 0
 
     def calculate_surplus(self) -> float:
         """
