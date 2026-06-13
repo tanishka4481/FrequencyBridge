@@ -16,6 +16,7 @@ from src.physics.weather import WeatherGenerator, WeatherParams
 from src.grid.converter import ConverterAgent, ConverterParams
 from src.agents.microgrid_agent import MicroGridAgent, AgentParams
 from src.market.auction_engine import AuctionEngine, Bid, Ask
+from src.physics.live_weather import get_live_weather_baselines
 
 
 @dataclass
@@ -43,14 +44,16 @@ class FreqBridgeSimulation:
         self.freq_model = FrequencyModel()
         
         # 2. Initialize Weather
-        # East: slightly more wind, less solar volatility. West: high solar volatility.
+        # Fetch live baseline from Open-Meteo API
+        solar_east, wind_east, solar_west, wind_west = get_live_weather_baselines()
+        
         self.weather_gen_east = WeatherGenerator(
-            solar_params=WeatherParams(mean_reversion=0.1, long_term_mean=0.3, volatility=0.05),
-            wind_params=WeatherParams(mean_reversion=0.05, long_term_mean=0.4, volatility=0.08)
+            solar_params=WeatherParams(mean_reversion=0.1, long_term_mean=solar_east, volatility=0.05),
+            wind_params=WeatherParams(mean_reversion=0.05, long_term_mean=wind_east, volatility=0.08)
         )
         self.weather_gen_west = WeatherGenerator(
-            solar_params=WeatherParams(mean_reversion=0.08, long_term_mean=0.4, volatility=0.09),
-            wind_params=WeatherParams(mean_reversion=0.1, long_term_mean=0.2, volatility=0.04)
+            solar_params=WeatherParams(mean_reversion=0.08, long_term_mean=solar_west, volatility=0.09),
+            wind_params=WeatherParams(mean_reversion=0.1, long_term_mean=wind_west, volatility=0.04)
         )
         
         # 3. Initialize Grid / Converter
