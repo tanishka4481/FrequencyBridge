@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreqBridge Operations Terminal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="terminal-layout">
+        <!-- TOP KPI STRIP -->
+        <header class="kpi-strip">
+            <div class="brand">
+                <h1>FreqBridge</h1>
+                <span class="status-indicator">● LIVE</span>
+            </div>
+            <div class="kpi-container">
+                <div class="kpi-box">
+                    <span class="label">East Frequency</span>
+                    <span class="value" id="kpi-east-freq">50.00 Hz</span>
+                </div>
+                <div class="kpi-box">
+                    <span class="label">West Frequency</span>
+                    <span class="value" id="kpi-west-freq">60.00 Hz</span>
+                </div>
+                <div class="kpi-box">
+                    <span class="label">Converter Usage</span>
+                    <span class="value" id="kpi-converter-util">0%</span>
+                </div>
+                <div class="kpi-box">
+                    <span class="label">Energy Traded</span>
+                    <span class="value" id="kpi-energy-traded">0 MWh</span>
+                </div>
+                <div class="kpi-box warning">
+                    <span class="label">Blackout Risk</span>
+                    <span class="value" id="kpi-blackout-risk">0%</span>
+                </div>
+            </div>
+            <div class="controls">
+                <button id="btn-start" class="btn primary">Start</button>
+                <button id="btn-pause" class="btn warning">Pause</button>
+                <button id="btn-reset" class="btn danger">Reset</button>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="main-grid">
+            <!-- LEFT PANEL: Weather Intelligence -->
+            <aside class="panel left-panel">
+                <h2>Weather Intelligence</h2>
+                
+                <div class="weather-controls">
+                    <button id="btn-cloud-shock" class="btn action">Inject Cloud Shock</button>
+                    <button id="btn-wind-collapse" class="btn action">Inject Wind Collapse</button>
+                </div>
+                
+                <div class="chart-container-small">
+                    <canvas id="weather-chart"></canvas>
+                </div>
+            </aside>
+
+            <!-- CENTER PANEL: Topology Grid -->
+            <section class="panel center-panel">
+                <h2>Live Grid Topology</h2>
+                <div class="topology-container" id="topology-canvas-container">
+                    <!-- Canvas will be injected by topology.js -->
+                    <canvas id="topology-canvas"></canvas>
+                </div>
+            </section>
+
+            <!-- RIGHT PANEL: Live Market Terminal -->
+            <aside class="panel right-panel">
+                <div class="header-group">
+                    <h2>Market Terminal</h2>
+                    <button id="btn-pid-mode" class="btn outline">Switch PID</button>
+                </div>
+                <div class="terminal-window" id="logs-container">
+                    <!-- Logs go here -->
+                </div>
+            </aside>
+
+            <!-- BOTTOM SECTION: Charts -->
+            <section class="panel bottom-panel">
+                <div class="chart-grid">
+                    <div class="chart-wrapper">
+                        <h3>Frequency Deviation</h3>
+                        <canvas id="freq-chart"></canvas>
+                    </div>
+                    <div class="chart-wrapper">
+                        <h3>Converter Physical Flow</h3>
+                        <canvas id="converter-chart"></canvas>
+                    </div>
+                    <div class="chart-wrapper">
+                        <h3>Energy Market Pricing</h3>
+                        <canvas id="market-chart"></canvas>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/websocket.js"></script>
+    <script src="js/topology.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
